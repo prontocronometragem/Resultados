@@ -60,6 +60,14 @@
       letter-spacing: -0.03em;
     }
 
+    .hero-logo {
+      display: block;
+      width: clamp(70px, 9vw, 120px);
+      height: auto;
+      margin: 0 auto 10px;
+      object-fit: contain;
+    }
+
     .hero p {
       margin: 0;
     }
@@ -401,6 +409,7 @@
 <body>
   <div class="page-shell">
     <header class="hero">
+      <img src="./logo.png" alt="Logo do evento" class="hero-logo">
       <h1>Resultados</h1>
       <p id="nome-evento" class="hero-event">Carregando evento...</p>
       <p class="hero-update">Ultima atualizacao: <span id="hora-update">--:--:--</span></p>
