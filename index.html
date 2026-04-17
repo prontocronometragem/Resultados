@@ -780,9 +780,8 @@
       }
 
       const etapaAtual = textoSeguro(atleta?.etapa_atual).trim();
-      const parcialAtual = textoSeguro(atleta?.parcial_atual).trim();
       if (etapaAtual && !mapa.has(etapaAtual)) {
-        mapa.set(etapaAtual, parcialAtual);
+        mapa.set(etapaAtual, "");
       }
 
       return mapa;
