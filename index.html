@@ -576,6 +576,7 @@
         atleta?.nome,
         atleta?.num,
         atleta?.equipe,
+        atleta?.status,
         atleta?.modalidade,
         atleta?.percurso,
         atleta?.faixa,
@@ -653,6 +654,7 @@
                   <th class="col-num">Numero</th>
                   <th class="col-nome">Nome</th>
                   <th class="col-equipe">Equipe</th>
+                  <th class="col-stage">Status</th>
                   ${etapas.map((etapa) => `<th class="col-stage">${escapeHtml(etapa)}</th>`).join("")}
                   <th class="col-tempo">Tempo</th>
                 </tr>
@@ -745,6 +747,7 @@
           <td class="col-num">${escapeHtml(textoSeguro(atleta.num))}</td>
           <td class="col-nome">${escapeHtml(textoSeguro(atleta.nome))}</td>
           <td class="col-equipe">${escapeHtml(textoSeguro(atleta.equipe))}</td>
+          <td class="col-stage">${escapeHtml(textoSeguro(atleta.status))}</td>
           ${etapas.map((etapa) => `<td class="col-stage">${escapeHtml(textoSeguro(mapa.get(etapa) || ""))}</td>`).join("")}
           <td class="col-tempo">${escapeHtml(textoSeguro(atleta.tempo))}</td>
         </tr>
@@ -801,6 +804,10 @@
           <div class="mobile-team">${escapeHtml(textoSeguro(atleta.equipe))}</div>
 
           <div class="mobile-metrics">
+            <div class="metric">
+              <span class="metric-label">Status</span>
+              <span class="metric-value">${escapeHtml(textoSeguro(atleta.status))}</span>
+            </div>
             <div class="metric">
               <span class="metric-label">Tempo</span>
               <span class="metric-value">${escapeHtml(textoSeguro(atleta.tempo))}</span>
