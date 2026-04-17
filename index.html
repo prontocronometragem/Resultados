@@ -245,6 +245,13 @@
       white-space: nowrap;
     }
 
+    .col-stage {
+      width: 170px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
     .col-voltas {
       width: 100px;
       text-align: right;
@@ -333,6 +340,29 @@
       color: var(--ink);
       word-break: break-word;
       font-variant-numeric: tabular-nums;
+    }
+
+    .stage-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stage-item {
+      background: var(--panel-muted);
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-height: 68px;
+    }
+
+    .stage-item strong {
+      display: block;
+      color: var(--ink-soft);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
     }
 
     .empty-state {
@@ -546,8 +576,10 @@
         atleta?.nome,
         atleta?.num,
         atleta?.equipe,
+        atleta?.modalidade,
         atleta?.percurso,
-        atleta?.faixa
+        atleta?.faixa,
+        atleta?.etapa_atual
       ]
         .map((valor) => normalizar(valor))
         .join(" ");
@@ -608,6 +640,14 @@
       const titulo = escapeHtml(textoSeguro(categoria.titulo));
       const atletas = Array.isArray(categoria.atletas) ? categoria.atletas : [];
 
+      if (isCategoriaParciais(categoria)) {
+        return renderizarCategoriaParciais(titulo, atletas);
+      }
+
+      const mostrarParciais = atletas.some((atleta) =>
+        textoSeguro(atleta?.etapa_atual).trim() || textoSeguro(atleta?.parcial_atual).trim()
+      );
+
       return `
         <section class="categoria-card">
           <div class="categoria-header">${titulo}</div>
@@ -620,19 +660,54 @@
                   <th class="col-num">Numero</th>
                   <th class="col-nome">Nome</th>
                   <th class="col-equipe">Equipe</th>
+                  ${mostrarParciais ? '<th class="col-nome">Etapa Atual</th><th class="col-tempo">Parcial Atual</th>' : ""}
                   <th class="col-tempo">Tempo Bruto</th>
                   <th class="col-tempo">Tempo Liquido</th>
                   <th class="col-voltas">Voltas</th>
                 </tr>
               </thead>
               <tbody>
-                ${atletas.map(renderizarLinhaDesktop).join("")}
+                ${atletas.map((atleta) => renderizarLinhaDesktop(atleta, mostrarParciais)).join("")}
               </tbody>
             </table>
           </div>
 
           <div class="mobile-list">
-            ${atletas.map(renderizarCardMobile).join("")}
+            ${atletas.map((atleta) => renderizarCardMobile(atleta, mostrarParciais)).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function isCategoriaParciais(categoria) {
+      return normalizar(categoria?.tipo) === "parciais";
+    }
+
+    function renderizarCategoriaParciais(titulo, atletas) {
+      const etapas = coletarEtapasParciais(atletas);
+
+      return `
+        <section class="categoria-card">
+          <div class="categoria-header">${titulo}</div>
+
+          <div class="desktop-table-wrap">
+            <table class="resultado-table">
+              <thead>
+                <tr>
+                  <th class="col-num">Numero</th>
+                  <th class="col-nome">Nome</th>
+                  <th class="col-equipe">Equipe</th>
+                  ${etapas.map((etapa) => `<th class="col-stage">${escapeHtml(etapa)}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>
+                ${atletas.map((atleta) => renderizarLinhaParciaisDesktop(atleta, etapas)).join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mobile-list">
+            ${atletas.map((atleta) => renderizarCardParciaisMobile(atleta, etapas)).join("")}
           </div>
         </section>
       `;
@@ -695,13 +770,14 @@
       return tituloSeguro;
     }
 
-    function renderizarLinhaDesktop(atleta) {
+    function renderizarLinhaDesktop(atleta, mostrarParciais) {
       return `
         <tr>
           <td class="col-pos">${escapeHtml(textoSeguro(atleta.pos))}</td>
           <td class="col-num">${escapeHtml(textoSeguro(atleta.num))}</td>
           <td class="col-nome">${escapeHtml(textoSeguro(atleta.nome))}</td>
           <td class="col-equipe">${escapeHtml(textoSeguro(atleta.equipe))}</td>
+          ${mostrarParciais ? `<td class="col-nome">${escapeHtml(textoSeguro(atleta.etapa_atual))}</td><td class="col-tempo">${escapeHtml(textoSeguro(atleta.parcial_atual))}</td>` : ""}
           <td class="col-tempo">${escapeHtml(textoSeguro(atleta.tempo_bruto))}</td>
           <td class="col-tempo">${escapeHtml(textoSeguro(atleta.tempo_liquido))}</td>
           <td class="col-voltas">${escapeHtml(textoSeguro(atleta.voltas))}</td>
@@ -709,7 +785,57 @@
       `;
     }
 
-    function renderizarCardMobile(atleta) {
+    function coletarEtapasParciais(atletas) {
+      const etapas = [];
+      const vistos = new Set();
+
+      for (const atleta of atletas || []) {
+        const mapa = obterMapaParciais(atleta);
+        for (const etapa of mapa.keys()) {
+          const chave = normalizar(etapa);
+          if (chave && !vistos.has(chave)) {
+            vistos.add(chave);
+            etapas.push(etapa);
+          }
+        }
+      }
+
+      return etapas;
+    }
+
+    function obterMapaParciais(atleta) {
+      const mapa = new Map();
+      const lista = Array.isArray(atleta?.parciais) ? atleta.parciais : [];
+
+      for (const parcial of lista) {
+        const etapa = textoSeguro(parcial?.etapa).trim();
+        if (!etapa || mapa.has(etapa)) continue;
+        mapa.set(etapa, textoSeguro(parcial?.tempo).trim());
+      }
+
+      const etapaAtual = textoSeguro(atleta?.etapa_atual).trim();
+      const parcialAtual = textoSeguro(atleta?.parcial_atual).trim();
+      if (etapaAtual && !mapa.has(etapaAtual)) {
+        mapa.set(etapaAtual, parcialAtual);
+      }
+
+      return mapa;
+    }
+
+    function renderizarLinhaParciaisDesktop(atleta, etapas) {
+      const mapa = obterMapaParciais(atleta);
+
+      return `
+        <tr>
+          <td class="col-num">${escapeHtml(textoSeguro(atleta.num))}</td>
+          <td class="col-nome">${escapeHtml(textoSeguro(atleta.nome))}</td>
+          <td class="col-equipe">${escapeHtml(textoSeguro(atleta.equipe))}</td>
+          ${etapas.map((etapa) => `<td class="col-stage">${escapeHtml(textoSeguro(mapa.get(etapa) || ""))}</td>`).join("")}
+        </tr>
+      `;
+    }
+
+    function renderizarCardMobile(atleta, mostrarParciais) {
       return `
         <article class="mobile-athlete">
           <div class="mobile-topline">
@@ -733,6 +859,40 @@
               <span class="metric-label">Voltas</span>
               <span class="metric-value">${escapeHtml(textoSeguro(atleta.voltas))}</span>
             </div>
+            ${mostrarParciais ? `
+            <div class="metric">
+              <span class="metric-label">Etapa Atual</span>
+              <span class="metric-value">${escapeHtml(textoSeguro(atleta.etapa_atual))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Parcial Atual</span>
+              <span class="metric-value">${escapeHtml(textoSeguro(atleta.parcial_atual))}</span>
+            </div>` : ""}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderizarCardParciaisMobile(atleta, etapas) {
+      const mapa = obterMapaParciais(atleta);
+      const etapasVisiveis = etapas.filter((etapa) => textoSeguro(mapa.get(etapa)).trim());
+
+      return `
+        <article class="mobile-athlete">
+          <div class="mobile-topline">
+            <span class="mobile-num">Numero ${escapeHtml(textoSeguro(atleta.num))}</span>
+          </div>
+
+          <div class="mobile-name">${escapeHtml(textoSeguro(atleta.nome))}</div>
+          <div class="mobile-team">${escapeHtml(textoSeguro(atleta.equipe))}</div>
+
+          <div class="stage-list">
+            ${etapasVisiveis.map((etapa) => `
+              <div class="stage-item">
+                <strong>${escapeHtml(etapa)}</strong>
+                <span>${escapeHtml(textoSeguro(mapa.get(etapa)))}</span>
+              </div>
+            `).join("")}
           </div>
         </article>
       `;
