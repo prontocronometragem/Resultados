@@ -640,6 +640,11 @@
     function renderizarCategoria(categoria) {
       const titulo = escapeHtml(textoSeguro(categoria.titulo));
       const atletas = Array.isArray(categoria.atletas) ? categoria.atletas : [];
+
+      if (normalizar(categoria?.tipo) === "desclassificados") {
+        return renderizarCategoriaDesclassificados(titulo, atletas);
+      }
+
       const etapas = obterEtapasCategoria(categoria, atletas);
 
       return `
@@ -667,6 +672,35 @@
 
           <div class="mobile-list">
             ${atletas.map((atleta) => renderizarCardMobile(atleta, etapas)).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderizarCategoriaDesclassificados(titulo, atletas) {
+      return `
+        <section class="categoria-card">
+          <div class="categoria-header">${titulo}</div>
+
+          <div class="desktop-table-wrap">
+            <table class="resultado-table">
+              <thead>
+                <tr>
+                  <th class="col-num">Numero</th>
+                  <th class="col-nome">Nome</th>
+                  <th class="col-equipe">Equipe</th>
+                  <th class="col-stage">Status</th>
+                  <th class="col-nome">MotivoDesclassificacao</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${atletas.map(renderizarLinhaDesclassificadoDesktop).join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mobile-list">
+            ${atletas.map(renderizarCardDesclassificadoMobile).join("")}
           </div>
         </section>
       `;
@@ -754,6 +788,18 @@
       `;
     }
 
+    function renderizarLinhaDesclassificadoDesktop(atleta) {
+      return `
+        <tr>
+          <td class="col-num">${escapeHtml(textoSeguro(atleta.num))}</td>
+          <td class="col-nome">${escapeHtml(textoSeguro(atleta.nome))}</td>
+          <td class="col-equipe">${escapeHtml(textoSeguro(atleta.equipe))}</td>
+          <td class="col-stage">${escapeHtml(textoSeguro(atleta.status))}</td>
+          <td class="col-nome">${escapeHtml(textoSeguro(atleta.motivo_desclassificacao))}</td>
+        </tr>
+      `;
+    }
+
     function coletarEtapasParciais(atletas) {
       const etapas = [];
       const vistos = new Set();
@@ -821,6 +867,30 @@
                 <span>${escapeHtml(textoSeguro(mapa.get(etapa) || ""))}</span>
               </div>
             `).join("")}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderizarCardDesclassificadoMobile(atleta) {
+      return `
+        <article class="mobile-athlete">
+          <div class="mobile-topline">
+            <span class="mobile-num">Numero ${escapeHtml(textoSeguro(atleta.num))}</span>
+          </div>
+
+          <div class="mobile-name">${escapeHtml(textoSeguro(atleta.nome))}</div>
+          <div class="mobile-team">${escapeHtml(textoSeguro(atleta.equipe))}</div>
+
+          <div class="mobile-metrics">
+            <div class="metric">
+              <span class="metric-label">Status</span>
+              <span class="metric-value">${escapeHtml(textoSeguro(atleta.status))}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">MotivoDesclassificacao</span>
+              <span class="metric-value">${escapeHtml(textoSeguro(atleta.motivo_desclassificacao))}</span>
+            </div>
           </div>
         </article>
       `;
