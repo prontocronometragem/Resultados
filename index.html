@@ -594,14 +594,14 @@
       }
 
       if (!buscaAtiva) {
-        return `${totalPercursos} percurso(s), ${totalCategorias} categorias exibidas em tempo real.`;
+        return `${totalPercursos} modalidade(s), ${totalCategorias} categorias exibidas em tempo real.`;
       }
 
       if (totalAtletas === 0) {
         return "Busca ativa sem resultados.";
       }
 
-      return `${totalAtletas} atleta(s) encontrado(s) em ${totalCategorias} categoria(s) de ${totalPercursos} percurso(s).`;
+      return `${totalAtletas} atleta(s) encontrado(s) em ${totalCategorias} categoria(s) de ${totalPercursos} modalidade(s).`;
     }
 
     function contarAtletas(categorias) {
@@ -631,7 +631,7 @@
     function renderizarGrupoPercurso(grupo) {
       return `
         <section class="percurso-section">
-          <div class="percurso-title">Percurso: ${escapeHtml(textoSeguro(grupo.percurso))}</div>
+          <div class="percurso-title">Modalidade: ${escapeHtml(textoSeguro(grupo.percurso))}</div>
           ${grupo.categorias.map(renderizarCategoria).join("")}
         </section>
       `;
