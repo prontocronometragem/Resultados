@@ -141,6 +141,17 @@
       min-height: 1.4em;
     }
 
+    .status-banner {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fff7ed;
+      color: #9a3412;
+      border: 1px solid #fdba74;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow);
+    }
+
     .results-grid {
       margin-top: 18px;
       display: grid;
@@ -464,6 +475,7 @@
     </section>
 
     <div id="resultado-contador" class="result-count"></div>
+    <div id="status-banner" class="status-banner" hidden></div>
 
     <main id="lista-resultados" class="results-grid">
       <div class="empty-state">Aguardando dados do cronometro...</div>
@@ -486,12 +498,15 @@
       evento: "Pronto Resultados",
       atualizacao: "--:--:--",
       categorias: [],
+      painelStatus: "ok",
+      mensagemOperacional: "",
       busca: ""
     };
 
     const listaResultados = document.getElementById("lista-resultados");
     const campoBusca = document.getElementById("busca-atleta");
     const contadorResultados = document.getElementById("resultado-contador");
+    const statusBanner = document.getElementById("status-banner");
 
     campoBusca.addEventListener("input", (event) => {
       state.busca = normalizar(event.target.value);
@@ -505,6 +520,8 @@
         state.evento = "Pronto Resultados";
         state.atualizacao = "--:--:--";
         state.categorias = [];
+        state.painelStatus = "sem_dados";
+        state.mensagemOperacional = "Sem dados publicados.";
         atualizarCabecalho();
         render();
         return;
@@ -513,6 +530,8 @@
       state.evento = data.evento || "pronto Resultados";
       state.atualizacao = data.ultima_atualizacao || "--:--:--";
       state.categorias = normalizarCategorias(data.resultados);
+      state.painelStatus = data.status_painel || "ok";
+      state.mensagemOperacional = data.mensagem_operacional || "";
 
       atualizarCabecalho();
       render();
@@ -542,8 +561,11 @@
         totalPercursos
       );
 
+       atualizarStatusBanner();
+
       if (!state.categorias.length) {
-        listaResultados.innerHTML = '<div class="empty-state">Aguardando dados do cronometro...</div>';
+        const mensagem = state.mensagemOperacional || "Aguardando dados do cronometro...";
+        listaResultados.innerHTML = `<div class="empty-state">${escapeHtml(mensagem)}</div>`;
         return;
       }
 
@@ -553,6 +575,12 @@
       }
 
       listaResultados.innerHTML = gruposPorPercurso.map(renderizarGrupoPercurso).join("");
+    }
+
+    function atualizarStatusBanner() {
+      const temAlerta = normalizar(state.painelStatus) !== "OK" && textoSeguro(state.mensagemOperacional).trim().length > 0;
+      statusBanner.hidden = !temAlerta;
+      statusBanner.textContent = temAlerta ? state.mensagemOperacional : "";
     }
 
     function filtrarCategorias(categorias, busca) {
