@@ -609,13 +609,7 @@
     function atletaCombinaBusca(atleta, busca) {
       const alvo = [
         atleta?.nome,
-        atleta?.num,
-        atleta?.equipe,
-        atleta?.status,
-        atleta?.modalidade,
-        atleta?.percurso,
-        atleta?.faixa,
-        atleta?.etapa_atual
+        atleta?.num
       ]
         .map((valor) => normalizar(valor))
         .join(" ");
@@ -954,4 +948,3 @@
   </script>
 </body>
 </html>
-
