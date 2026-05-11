@@ -78,6 +78,12 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
+        .hero-contact {
+      margin-top: 6px;
+      font-size: 0.98rem;
+      color: rgba(255, 255, 255, 0.86);
+    }
+
     .hero-update {
       margin-top: 22px;
       font-size: 0.98rem;
@@ -453,6 +459,7 @@
       <img src="./logo.png" alt="Logo do evento" class="hero-logo">
       <h1>Resultados</h1>
       <p id="nome-evento" class="hero-event">Carregando evento...</p>
+      <p id="contato-evento" class="hero-contact">Contato: Nerval (38) 98847-2336</p>
       <p class="hero-update">Ultima atualizacao: <span id="hora-update">--:--:--</span></p>
     </header>
 
@@ -496,6 +503,7 @@
 
     const state = {
       evento: "Pronto Resultados",
+      contato: "Contato: Nerval (38) 98847-2336",
       atualizacao: "--:--:--",
       categorias: [],
       painelStatus: "ok",
@@ -518,6 +526,7 @@
 
       if (!data) {
         state.evento = "Pronto Resultados";
+        state.contato = "Contato: Nerval (38) 98847-2336";
         state.atualizacao = "--:--:--";
         state.categorias = [];
         state.painelStatus = "sem_dados";
@@ -527,7 +536,8 @@
         return;
       }
 
-      state.evento = data.evento || "pronto Resultados";
+      state.evento = data.evento || "Pronto Resultados";
+      state.contato = data.contato || "Contato: Nerval (38) 98847-2336";
       state.atualizacao = data.ultima_atualizacao || "--:--:--";
       state.categorias = normalizarCategorias(data.resultados);
       state.painelStatus = data.status_painel || "ok";
@@ -543,6 +553,7 @@
 
     function atualizarCabecalho() {
       document.getElementById("nome-evento").textContent = state.evento;
+      document.getElementById("contato-evento").textContent = state.contato;
       document.getElementById("hora-update").textContent = state.atualizacao;
     }
 
@@ -947,3 +958,5 @@
   </script>
 </body>
 </html>
+
+
