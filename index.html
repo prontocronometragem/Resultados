@@ -607,14 +607,16 @@
     }
 
     function atletaCombinaBusca(atleta, busca) {
-      const alvo = [
-        atleta?.nome,
-        atleta?.num
-      ]
-        .map((valor) => normalizar(valor))
-        .join(" ");
+      const termo = normalizar(busca);
+      const nome = normalizar(atleta?.nome);
+      const numero = normalizar(atleta?.num);
+      const buscaSomenteNumero = /^\d+$/.test(termo);
 
-      return alvo.includes(busca);
+      if (buscaSomenteNumero) {
+        return numero === termo;
+      }
+
+      return nome.includes(termo);
     }
 
     function montarResumoResultados(buscaAtiva, totalAtletas, totalCategorias, totalPercursos) {
