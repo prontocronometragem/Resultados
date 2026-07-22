@@ -63,11 +63,10 @@
       letter-spacing: -0.03em;
     }
 
-    .hero-logo {
+    .top-logo {
       display: block;
-      width: clamp(70px, 9vw, 120px);
+      width: clamp(70px, 8vw, 110px);
       height: auto;
-      margin: 0 auto 10px;
       object-fit: contain;
     }
 
@@ -157,7 +156,9 @@
     .top-actions {
       margin-bottom: 12px;
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
 
     .resultados-button {
@@ -494,22 +495,45 @@
       font-size: 0.9rem;
     }
 
-    .historico-link {
+    .historico-actions {
       flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .historico-link,
+    .historico-delete {
       min-height: 42px;
       border-radius: 12px;
-      background: var(--accent);
-      color: #fff;
       padding: 10px 14px;
-      text-decoration: none;
       font-weight: 700;
       white-space: nowrap;
+    }
+
+    .historico-link {
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
     }
 
     .historico-link:hover,
     .historico-link:focus-visible {
       color: #fff;
       opacity: 0.9;
+      outline: none;
+    }
+
+    .historico-delete {
+      border: 1px solid #fecaca;
+      background: #fff1f2;
+      color: #b91c1c;
+      cursor: pointer;
+    }
+
+    .historico-delete:hover,
+    .historico-delete:focus-visible {
+      background: #ffe4e6;
       outline: none;
     }
 
@@ -648,7 +672,13 @@
         flex-direction: column;
       }
 
-      .historico-link {
+      .historico-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .historico-link,
+      .historico-delete {
         text-align: center;
       }
 
@@ -697,12 +727,11 @@
         font-size: 0.97rem;
       }
 
-      .top-actions {
-        justify-content: stretch;
+      .top-logo {
+        width: 72px;
       }
 
       .resultados-button {
-        width: 100%;
         min-height: 42px;
         font-size: 0.95rem;
       }
@@ -729,11 +758,11 @@
 <body>
   <div class="page-shell">
     <div class="top-actions">
+      <img src="./logo.png" alt="Logo do evento" class="top-logo">
       <button id="historico-toggle" class="resultados-button" type="button">Resultados</button>
     </div>
 
     <header class="hero">
-      <img src="./logo.png" alt="Logo do evento" class="hero-logo">
       <h1>Resultados ao Vivo</h1>
       <p id="nome-evento" class="hero-event">Carregando evento...</p>
       <p class="hero-update">Ultima atualizacao: <span id="hora-update">--:--:--</span></p>
@@ -803,7 +832,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref as databaseRef, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref as databaseRef, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
       databaseURL: "https://pronto-resultados-default-rtdb.firebaseio.com/"
@@ -837,7 +866,7 @@
     const historicoSaveButton = document.getElementById("historico-save-button");
     const historicoAdminStatus = document.getElementById("historico-admin-status");
     const listaHistorico = document.getElementById("lista-historico");
-    const modoAdmin = new URLSearchParams(window.location.search).get("admin") === "1" || window.location.hash === "#admin";
+    const modoAdmin = new URLSearchParams(window.location.search).get("admin") === "200595";
 
     historicoAdminForm.hidden = !modoAdmin;
 
@@ -865,6 +894,15 @@
       event.preventDefault();
       await publicarResultadoAnterior();
     });
+
+    listaHistorico.addEventListener("click", async (event) => {
+      const alvo = event.target instanceof Element ? event.target : null;
+      const botaoExcluir = alvo?.closest("[data-historico-delete]");
+      if (!botaoExcluir || !modoAdmin) return;
+
+      await excluirResultadoAnterior(botaoExcluir.dataset.historicoDelete);
+    });
+
     onValue(resultadosRef, (snapshot) => {
       const data = snapshot.val();
 
@@ -953,6 +991,23 @@
       historicoSaveButton.textContent = emAndamento ? "Publicando..." : "Publicar link";
     }
 
+    async function excluirResultadoAnterior(id) {
+      const idSeguro = textoSeguro(id).trim();
+      if (!idSeguro) return;
+
+      const confirmar = window.confirm("Deseja excluir este link de resultado?");
+      if (!confirmar) return;
+
+      atualizarStatusHistorico("Excluindo link...", "");
+
+      try {
+        await remove(databaseRef(db, `prova/resultados_anteriores/${idSeguro}`));
+        atualizarStatusHistorico("Link excluido com sucesso.", "success");
+      } catch (error) {
+        atualizarStatusHistorico(`Erro ao excluir link: ${error.message || "falha desconhecida"}`, "error");
+      }
+    }
+
     function atualizarStatusHistorico(mensagem, tipo) {
       historicoAdminStatus.textContent = mensagem;
       historicoAdminStatus.classList.toggle("error", tipo === "error");
@@ -983,6 +1038,9 @@
       const evento = textoSeguro(resultado.evento).trim();
       const metadados = [evento, data].filter(Boolean).join(" - ");
       const rotuloLink = href === "#" ? "Indisponivel" : "Abrir resultado";
+      const botaoExcluir = modoAdmin
+        ? `<button class="historico-delete" type="button" data-historico-delete="${escapeHtml(resultado.id)}">Excluir</button>`
+        : "";
 
       return `
         <article class="historico-item">
@@ -990,7 +1048,10 @@
             <strong class="historico-title">${titulo}</strong>
             <span class="historico-meta">${escapeHtml(metadados)}</span>
           </div>
-          <a class="historico-link" href="${href}" target="_blank" rel="noopener">${rotuloLink}</a>
+          <div class="historico-actions">
+            <a class="historico-link" href="${href}" target="_blank" rel="noopener">${rotuloLink}</a>
+            ${botaoExcluir}
+          </div>
         </article>
       `;
     }
