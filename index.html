@@ -181,13 +181,31 @@
       outline: none;
     }
 
-    .historico-section {
-      margin-top: 16px;
-      background: rgba(255, 255, 255, 0.94);
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    .historico-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(15, 23, 42, 0.58);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .historico-dialog {
+      width: min(920px, 100%);
+      max-height: min(760px, calc(100vh - 48px));
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.98);
       border: 1px solid rgba(217, 226, 236, 0.92);
       border-radius: 18px;
       padding: 18px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
     }
 
     .historico-header {
@@ -195,6 +213,25 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+    }
+
+    .modal-close {
+      flex: 0 0 auto;
+      min-height: 40px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--panel-muted);
+      color: var(--ink);
+      padding: 0 14px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modal-close:hover,
+    .modal-close:focus-visible {
+      background: #e5eaf0;
+      outline: none;
     }
 
     .historico-header strong {
@@ -625,6 +662,25 @@
     }
 
     @media (max-width: 575px) {
+      .historico-modal {
+        align-items: stretch;
+        padding: 12px;
+      }
+
+      .historico-dialog {
+        max-height: calc(100vh - 24px);
+        padding: 14px;
+      }
+
+      .historico-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .modal-close {
+        width: 100%;
+      }
+
       .hero h1 {
         font-size: 2.1rem;
       }
@@ -678,40 +734,43 @@
 
     <header class="hero">
       <img src="./logo.png" alt="Logo do evento" class="hero-logo">
-      <h1>Resultados</h1>
+      <h1>Resultados ao Vivo</h1>
       <p id="nome-evento" class="hero-event">Carregando evento...</p>
       <p class="hero-update">Ultima atualizacao: <span id="hora-update">--:--:--</span></p>
     </header>
 
-    <section id="historico-resultados" class="historico-section" hidden>
-      <div class="historico-header">
-        <div>
-          <strong>Resultados anteriores</strong>
-          <span>Links publicados de provas ja realizadas.</span>
+    <section id="historico-resultados" class="historico-modal" role="dialog" aria-modal="true" aria-labelledby="historico-title" hidden>
+      <div class="historico-dialog">
+        <div class="historico-header">
+          <div>
+            <strong id="historico-title">Resultados anteriores</strong>
+            <span>Links publicados de provas ja realizadas.</span>
+          </div>
+          <button id="historico-close" class="modal-close" type="button">Fechar</button>
         </div>
+
+        <form id="historico-admin-form" class="admin-panel" hidden>
+          <div class="admin-grid">
+            <div class="form-field">
+              <label for="historico-titulo">Titulo</label>
+              <input id="historico-titulo" class="text-input" type="text" maxlength="90" autocomplete="off">
+            </div>
+
+            <div class="form-field">
+              <label for="historico-url">Link</label>
+              <input id="historico-url" class="text-input" type="url" inputmode="url" autocomplete="off">
+            </div>
+
+            <button id="historico-save-button" class="admin-button" type="submit">Publicar link</button>
+          </div>
+
+          <div id="historico-admin-status" class="admin-status" aria-live="polite"></div>
+        </form>
+
+        <main id="lista-historico" class="historico-list">
+          <div class="empty-state">Nenhum resultado anterior publicado.</div>
+        </main>
       </div>
-
-      <form id="historico-admin-form" class="admin-panel" hidden>
-        <div class="admin-grid">
-          <div class="form-field">
-            <label for="historico-titulo">Titulo</label>
-            <input id="historico-titulo" class="text-input" type="text" maxlength="90" autocomplete="off">
-          </div>
-
-          <div class="form-field">
-            <label for="historico-url">Link</label>
-            <input id="historico-url" class="text-input" type="url" inputmode="url" autocomplete="off">
-          </div>
-
-          <button id="historico-save-button" class="admin-button" type="submit">Publicar link</button>
-        </div>
-
-        <div id="historico-admin-status" class="admin-status" aria-live="polite"></div>
-      </form>
-
-      <main id="lista-historico" class="historico-list">
-        <div class="empty-state">Nenhum resultado anterior publicado.</div>
-      </main>
     </section>
 
     <section class="toolbar">
@@ -771,6 +830,7 @@
     const statusBanner = document.getElementById("status-banner");
     const historicoToggle = document.getElementById("historico-toggle");
     const historicoSection = document.getElementById("historico-resultados");
+    const historicoClose = document.getElementById("historico-close");
     const historicoAdminForm = document.getElementById("historico-admin-form");
     const historicoTitulo = document.getElementById("historico-titulo");
     const historicoUrl = document.getElementById("historico-url");
@@ -781,12 +841,18 @@
 
     historicoAdminForm.hidden = !modoAdmin;
 
-    historicoToggle.addEventListener("click", () => {
-      const vaiAbrir = historicoSection.hidden;
-      historicoSection.hidden = !vaiAbrir;
+    historicoToggle.addEventListener("click", abrirHistorico);
+    historicoClose.addEventListener("click", fecharHistorico);
 
-      if (vaiAbrir) {
-        historicoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    historicoSection.addEventListener("click", (event) => {
+      if (event.target === historicoSection) {
+        fecharHistorico();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !historicoSection.hidden) {
+        fecharHistorico();
       }
     });
 
@@ -826,6 +892,18 @@
         `<div class="empty-state">Erro ao ler Firebase: ${escapeHtml(error.message || "Falha desconhecida")}</div>`;
       contadorResultados.textContent = "";
     });
+
+    function abrirHistorico() {
+      historicoSection.hidden = false;
+      document.body.classList.add("modal-open");
+      historicoClose.focus();
+    }
+
+    function fecharHistorico() {
+      historicoSection.hidden = true;
+      document.body.classList.remove("modal-open");
+      historicoToggle.focus();
+    }
 
     onValue(historicoRef, (snapshot) => {
       state.resultadosAnteriores = normalizarResultadosAnteriores(snapshot.val());
