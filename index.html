@@ -1077,10 +1077,7 @@
        atualizarStatusBanner();
 
       if (!state.categorias.length) {
-        const temNomeProva = textoSeguro(state.evento).trim().length > 0;
-        listaResultados.innerHTML = temNomeProva
-          ? '<div class="empty-state">Aguardando dados do cronometro...</div>'
-          : "";
+        listaResultados.innerHTML = "";
         return;
       }
 
