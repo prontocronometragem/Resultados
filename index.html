@@ -915,11 +915,11 @@
         return;
       }
 
-      state.evento = data.evento || "";
+      state.evento = textoSeguro(data.evento).trim();
       state.atualizacao = data.ultima_atualizacao || "--:--:--";
       state.categorias = normalizarCategorias(data.resultados);
       state.painelStatus = data.status_painel || "ok";
-      state.mensagemOperacional = data.mensagem_operacional || "";
+      state.mensagemOperacional = state.evento ? (data.mensagem_operacional || "") : "";
 
       atualizarCabecalho();
       render();
@@ -1077,8 +1077,10 @@
        atualizarStatusBanner();
 
       if (!state.categorias.length) {
-        const mensagem = textoSeguro(state.mensagemOperacional).trim();
-        listaResultados.innerHTML = mensagem ? `<div class="empty-state">${escapeHtml(mensagem)}</div>` : "";
+        const temNomeProva = textoSeguro(state.evento).trim().length > 0;
+        listaResultados.innerHTML = temNomeProva
+          ? '<div class="empty-state">Aguardando dados do cronometro...</div>'
+          : "";
         return;
       }
 
@@ -1091,9 +1093,16 @@
     }
 
     function atualizarStatusBanner() {
-      const temAlerta = normalizar(state.painelStatus) !== "OK" && textoSeguro(state.mensagemOperacional).trim().length > 0;
+      const temNomeProva = textoSeguro(state.evento).trim().length > 0;
+      const mensagem = textoSeguro(state.mensagemOperacional).trim();
+      const temAlerta = temNomeProva && normalizar(state.painelStatus) !== "OK" && mensagem.length > 0 && !mensagemDadosVazios(mensagem);
       statusBanner.hidden = !temAlerta;
       statusBanner.textContent = temAlerta ? state.mensagemOperacional : "";
+    }
+
+    function mensagemDadosVazios(mensagem) {
+      const texto = normalizar(mensagem);
+      return texto.includes("arquivo json vazio") || texto.includes("sem atletas");
     }
 
     function filtrarCategorias(categorias, busca) {
