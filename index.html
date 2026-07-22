@@ -764,7 +764,7 @@
 
     <header class="hero">
       <h1>Resultados ao Vivo</h1>
-      <p id="nome-evento" class="hero-event">Carregando evento...</p>
+      <p id="nome-evento" class="hero-event"></p>
       <p class="hero-update">Ultima atualizacao: <span id="hora-update">--:--:--</span></p>
     </header>
 
@@ -823,12 +823,10 @@
     <div id="resultado-contador" class="result-count"></div>
     <div id="status-banner" class="status-banner" hidden></div>
 
-    <main id="lista-resultados" class="results-grid">
-      <div class="empty-state">Aguardando dados do cronometro...</div>
-    </main>
+    <main id="lista-resultados" class="results-grid"></main>
   </div>
 
-  <footer class="institutional-footer">Pronto Cronometragem - Contato Nerval (38) 98847-2336</footer>
+  <footer class="institutional-footer">Pronto Sistemas de Cronometragem - Contato Nerval (38) 98847-2336</footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -907,17 +905,17 @@
       const data = snapshot.val();
 
       if (!data) {
-        state.evento = "Pronto Resultados";
+        state.evento = "";
         state.atualizacao = "--:--:--";
         state.categorias = [];
-        state.painelStatus = "sem_dados";
-        state.mensagemOperacional = "Sem dados publicados.";
+        state.painelStatus = "ok";
+        state.mensagemOperacional = "";
         atualizarCabecalho();
         render();
         return;
       }
 
-      state.evento = data.evento || "Pronto Resultados";
+      state.evento = data.evento || "";
       state.atualizacao = data.ultima_atualizacao || "--:--:--";
       state.categorias = normalizarCategorias(data.resultados);
       state.painelStatus = data.status_painel || "ok";
@@ -1079,8 +1077,8 @@
        atualizarStatusBanner();
 
       if (!state.categorias.length) {
-        const mensagem = state.mensagemOperacional || "Aguardando dados do cronometro...";
-        listaResultados.innerHTML = `<div class="empty-state">${escapeHtml(mensagem)}</div>`;
+        const mensagem = textoSeguro(state.mensagemOperacional).trim();
+        listaResultados.innerHTML = mensagem ? `<div class="empty-state">${escapeHtml(mensagem)}</div>` : "";
         return;
       }
 
