@@ -27,6 +27,10 @@
       box-sizing: border-box;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     body {
       margin: 0;
       background:
@@ -150,49 +154,59 @@
       box-shadow: var(--shadow);
     }
 
-    .tabs-bar {
-      margin-top: 16px;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid rgba(217, 226, 236, 0.95);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
+    .top-actions {
+      margin-bottom: 12px;
       display: flex;
-      gap: 8px;
+      justify-content: flex-end;
     }
 
-    .tab-button {
-      flex: 1 1 0;
-      min-height: 46px;
+    .resultados-button {
+      min-height: 44px;
       border: 0;
       border-radius: 14px;
-      background: transparent;
-      color: var(--ink-soft);
+      background: var(--brand-strong);
+      color: #fff;
+      padding: 0 18px;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow);
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    .tab-button:hover,
-    .tab-button:focus-visible {
-      background: #f1f5f9;
-      color: var(--ink);
+    .resultados-button:hover,
+    .resultados-button:focus-visible {
+      opacity: 0.92;
+      transform: translateY(-1px);
       outline: none;
     }
 
-    .tab-button.active {
-      background: var(--brand-strong);
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.15);
+    .historico-section {
+      margin-top: 16px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(217, 226, 236, 0.92);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
     }
 
-    .tab-panel {
-      display: none;
+    .historico-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .tab-panel.active {
+    .historico-header strong {
       display: block;
+      font-size: 1.08rem;
+    }
+
+    .historico-header span {
+      display: block;
+      color: var(--ink-soft);
+      font-size: 0.92rem;
+      margin-top: 3px;
     }
 
     .results-grid {
@@ -410,20 +424,69 @@
       min-height: 68px;
     }
 
-    .upload-panel {
-      margin-top: 18px;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid rgba(217, 226, 236, 0.92);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: var(--shadow);
+    .historico-list {
+      margin-top: 16px;
       display: grid;
-      gap: 16px;
+      gap: 12px;
     }
 
-    .upload-grid {
+    .historico-item {
+      background: var(--panel);
+      border: 1px solid rgba(217, 226, 236, 0.92);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .historico-title {
+      display: block;
+      color: var(--ink);
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .historico-meta {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+
+    .historico-link {
+      flex: 0 0 auto;
+      min-height: 42px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 14px;
+      text-decoration: none;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .historico-link:hover,
+    .historico-link:focus-visible {
+      color: #fff;
+      opacity: 0.9;
+      outline: none;
+    }
+
+    .admin-panel {
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
       gap: 12px;
       align-items: end;
     }
@@ -441,8 +504,7 @@
       letter-spacing: 0.04em;
     }
 
-    .text-input,
-    .file-input {
+    .text-input {
       width: 100%;
       min-height: 46px;
       border: 1px solid var(--line);
@@ -454,18 +516,17 @@
       transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     }
 
-    .text-input:focus,
-    .file-input:focus {
+    .text-input:focus {
       border-color: #7ba3cc;
       box-shadow: 0 0 0 4px rgba(123, 163, 204, 0.18);
       background: #fff;
     }
 
-    .upload-button {
+    .admin-button {
       min-height: 46px;
       border: 0;
       border-radius: 14px;
-      background: var(--accent);
+      background: var(--brand-strong);
       color: #fff;
       padding: 0 18px;
       font-size: 1rem;
@@ -475,83 +536,30 @@
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    .upload-button:hover,
-    .upload-button:focus-visible {
+    .admin-button:hover,
+    .admin-button:focus-visible {
       transform: translateY(-1px);
       outline: none;
     }
 
-    .upload-button:disabled {
+    .admin-button:disabled {
       cursor: wait;
       opacity: 0.65;
       transform: none;
     }
 
-    .upload-status {
+    .admin-status {
       min-height: 1.4em;
       color: var(--ink-soft);
       font-size: 0.94rem;
     }
 
-    .upload-status.error {
+    .admin-status.error {
       color: #b91c1c;
     }
 
-    .upload-status.success {
+    .admin-status.success {
       color: #166534;
-    }
-
-    .pdf-list {
-      margin-top: 18px;
-      display: grid;
-      gap: 12px;
-    }
-
-    .pdf-item {
-      background: var(--panel);
-      border: 1px solid rgba(217, 226, 236, 0.92);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .pdf-title {
-      display: block;
-      color: var(--ink);
-      font-size: 1.02rem;
-      font-weight: 700;
-      line-height: 1.25;
-      word-break: break-word;
-    }
-
-    .pdf-meta {
-      display: block;
-      margin-top: 5px;
-      color: var(--ink-soft);
-      font-size: 0.9rem;
-    }
-
-    .pdf-link {
-      flex: 0 0 auto;
-      min-height: 42px;
-      border-radius: 12px;
-      background: var(--brand-strong);
-      color: #fff;
-      padding: 10px 14px;
-      text-decoration: none;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .pdf-link:hover,
-    .pdf-link:focus-visible {
-      color: #fff;
-      opacity: 0.9;
-      outline: none;
     }
 
     .empty-state {
@@ -594,16 +602,16 @@
         padding: 14px;
       }
 
-      .upload-grid {
+      .admin-grid {
         grid-template-columns: 1fr;
       }
 
-      .pdf-item {
+      .historico-item {
         align-items: stretch;
         flex-direction: column;
       }
 
-      .pdf-link {
+      .historico-link {
         text-align: center;
       }
 
@@ -633,12 +641,12 @@
         font-size: 0.97rem;
       }
 
-      .tabs-bar {
-        gap: 6px;
-        padding: 6px;
+      .top-actions {
+        justify-content: stretch;
       }
 
-      .tab-button {
+      .resultados-button {
+        width: 100%;
         min-height: 42px;
         font-size: 0.95rem;
       }
@@ -664,6 +672,10 @@
 </head>
 <body>
   <div class="page-shell">
+    <div class="top-actions">
+      <button id="historico-toggle" class="resultados-button" type="button">Resultados</button>
+    </div>
+
     <header class="hero">
       <img src="./logo.png" alt="Logo do evento" class="hero-logo">
       <h1>Resultados</h1>
@@ -671,61 +683,61 @@
       <p class="hero-update">Ultima atualizacao: <span id="hora-update">--:--:--</span></p>
     </header>
 
-    <nav class="tabs-bar" aria-label="Navegacao de resultados">
-      <button class="tab-button active" type="button" data-tab-target="resultados" aria-selected="true">Resultados</button>
-      <button class="tab-button" type="button" data-tab-target="pdfs" aria-selected="false">PDFs</button>
-    </nav>
-
-    <section id="tab-resultados" class="tab-panel active" data-tab-panel="resultados">
-      <section class="toolbar">
-        <div class="toolbar-copy">
-          <strong>Busca rapida</strong>
-          <span>Encontre atleta por nome ou numero.</span>
+    <section id="historico-resultados" class="historico-section" hidden>
+      <div class="historico-header">
+        <div>
+          <strong>Resultados anteriores</strong>
+          <span>Links publicados de provas ja realizadas.</span>
         </div>
+      </div>
 
-        <div class="search-wrap">
-          <input
-            id="busca-atleta"
-            class="search-input"
-            type="search"
-            inputmode="search"
-            placeholder=""
-            autocomplete="off"
-          >
-        </div>
-      </section>
-
-      <div id="resultado-contador" class="result-count"></div>
-      <div id="status-banner" class="status-banner" hidden></div>
-
-      <main id="lista-resultados" class="results-grid">
-        <div class="empty-state">Aguardando dados do cronometro...</div>
-      </main>
-    </section>
-
-    <section id="tab-pdfs" class="tab-panel" data-tab-panel="pdfs">
-      <form id="pdf-upload-form" class="upload-panel">
-        <div class="upload-grid">
+      <form id="historico-admin-form" class="admin-panel" hidden>
+        <div class="admin-grid">
           <div class="form-field">
-            <label for="pdf-titulo">Titulo</label>
-            <input id="pdf-titulo" class="text-input" type="text" maxlength="90" autocomplete="off">
+            <label for="historico-titulo">Titulo</label>
+            <input id="historico-titulo" class="text-input" type="text" maxlength="90" autocomplete="off">
           </div>
 
           <div class="form-field">
-            <label for="pdf-arquivo">Arquivo PDF</label>
-            <input id="pdf-arquivo" class="file-input" type="file" accept="application/pdf,.pdf">
+            <label for="historico-url">Link</label>
+            <input id="historico-url" class="text-input" type="url" inputmode="url" autocomplete="off">
           </div>
 
-          <button id="pdf-upload-button" class="upload-button" type="submit">Subir PDF</button>
+          <button id="historico-save-button" class="admin-button" type="submit">Publicar link</button>
         </div>
 
-        <div id="pdf-upload-status" class="upload-status" aria-live="polite"></div>
+        <div id="historico-admin-status" class="admin-status" aria-live="polite"></div>
       </form>
 
-      <main id="lista-pdfs" class="pdf-list">
-        <div class="empty-state">Nenhum PDF publicado.</div>
+      <main id="lista-historico" class="historico-list">
+        <div class="empty-state">Nenhum resultado anterior publicado.</div>
       </main>
     </section>
+
+    <section class="toolbar">
+      <div class="toolbar-copy">
+        <strong>Busca rapida</strong>
+        <span>Encontre atleta por nome ou numero.</span>
+      </div>
+
+      <div class="search-wrap">
+        <input
+          id="busca-atleta"
+          class="search-input"
+          type="search"
+          inputmode="search"
+          placeholder=""
+          autocomplete="off"
+        >
+      </div>
+    </section>
+
+    <div id="resultado-contador" class="result-count"></div>
+    <div id="status-banner" class="status-banner" hidden></div>
+
+    <main id="lista-resultados" class="results-grid">
+      <div class="empty-state">Aguardando dados do cronometro...</div>
+    </main>
   </div>
 
   <footer class="institutional-footer">Pronto Sistemas de Cronometragem - Contato Nerval (38) 98847-2336</footer>
@@ -733,19 +745,15 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref as databaseRef, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
-      projectId: "pronto-resultados",
-      storageBucket: "pronto-resultados.firebasestorage.app",
       databaseURL: "https://pronto-resultados-default-rtdb.firebaseio.com/"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const storage = getStorage(app);
     const resultadosRef = databaseRef(db, "prova/atual");
-    const pdfsRef = databaseRef(db, "prova/pdfs");
+    const historicoRef = databaseRef(db, "prova/resultados_anteriores");
 
     const state = {
       evento: "Pronto Resultados",
@@ -754,24 +762,32 @@
       painelStatus: "ok",
       mensagemOperacional: "",
       busca: "",
-      pdfs: []
+      resultadosAnteriores: []
     };
 
     const listaResultados = document.getElementById("lista-resultados");
     const campoBusca = document.getElementById("busca-atleta");
     const contadorResultados = document.getElementById("resultado-contador");
     const statusBanner = document.getElementById("status-banner");
-    const tabButtons = document.querySelectorAll("[data-tab-target]");
-    const tabPanels = document.querySelectorAll("[data-tab-panel]");
-    const pdfUploadForm = document.getElementById("pdf-upload-form");
-    const pdfTitulo = document.getElementById("pdf-titulo");
-    const pdfArquivo = document.getElementById("pdf-arquivo");
-    const pdfUploadButton = document.getElementById("pdf-upload-button");
-    const pdfUploadStatus = document.getElementById("pdf-upload-status");
-    const listaPdfs = document.getElementById("lista-pdfs");
+    const historicoToggle = document.getElementById("historico-toggle");
+    const historicoSection = document.getElementById("historico-resultados");
+    const historicoAdminForm = document.getElementById("historico-admin-form");
+    const historicoTitulo = document.getElementById("historico-titulo");
+    const historicoUrl = document.getElementById("historico-url");
+    const historicoSaveButton = document.getElementById("historico-save-button");
+    const historicoAdminStatus = document.getElementById("historico-admin-status");
+    const listaHistorico = document.getElementById("lista-historico");
+    const modoAdmin = new URLSearchParams(window.location.search).get("admin") === "1" || window.location.hash === "#admin";
 
-    tabButtons.forEach((button) => {
-      button.addEventListener("click", () => ativarAba(button.dataset.tabTarget));
+    historicoAdminForm.hidden = !modoAdmin;
+
+    historicoToggle.addEventListener("click", () => {
+      const vaiAbrir = historicoSection.hidden;
+      historicoSection.hidden = !vaiAbrir;
+
+      if (vaiAbrir) {
+        historicoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
 
     campoBusca.addEventListener("input", (event) => {
@@ -779,11 +795,10 @@
       render();
     });
 
-    pdfUploadForm.addEventListener("submit", async (event) => {
+    historicoAdminForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      await enviarPdf();
+      await publicarResultadoAnterior();
     });
-
     onValue(resultadosRef, (snapshot) => {
       const data = snapshot.val();
 
@@ -812,128 +827,92 @@
       contadorResultados.textContent = "";
     });
 
-    onValue(pdfsRef, (snapshot) => {
-      state.pdfs = normalizarPdfs(snapshot.val());
-      renderizarPdfs();
+    onValue(historicoRef, (snapshot) => {
+      state.resultadosAnteriores = normalizarResultadosAnteriores(snapshot.val());
+      renderizarResultadosAnteriores();
     }, (error) => {
-      listaPdfs.innerHTML =
-        `<div class="empty-state">Erro ao ler PDFs: ${escapeHtml(error.message || "Falha desconhecida")}</div>`;
+      listaHistorico.innerHTML =
+        `<div class="empty-state">Erro ao ler resultados anteriores: ${escapeHtml(error.message || "Falha desconhecida")}</div>`;
     });
 
-    function ativarAba(aba) {
-      tabButtons.forEach((button) => {
-        const ativa = button.dataset.tabTarget === aba;
-        button.classList.toggle("active", ativa);
-        button.setAttribute("aria-selected", ativa ? "true" : "false");
-      });
+    async function publicarResultadoAnterior() {
+      const titulo = textoSeguro(historicoTitulo.value).trim();
+      const url = textoSeguro(historicoUrl.value).trim();
 
-      tabPanels.forEach((panel) => {
-        panel.classList.toggle("active", panel.dataset.tabPanel === aba);
-      });
-    }
-
-    async function enviarPdf() {
-      const arquivo = pdfArquivo.files && pdfArquivo.files[0];
-
-      if (!arquivo) {
-        atualizarStatusUpload("Selecione um arquivo PDF.", "error");
+      if (!titulo) {
+        atualizarStatusHistorico("Informe o titulo do resultado.", "error");
         return;
       }
 
-      const ehPdf = arquivo.type === "application/pdf" || arquivo.name.toLowerCase().endsWith(".pdf");
-      if (!ehPdf) {
-        atualizarStatusUpload("O arquivo selecionado precisa ser PDF.", "error");
+      if (!/^https?:\/\//i.test(url)) {
+        atualizarStatusHistorico("Informe um link com http:// ou https://.", "error");
         return;
       }
 
-      const limiteMb = 25;
-      if (arquivo.size > limiteMb * 1024 * 1024) {
-        atualizarStatusUpload(`O PDF precisa ter ate ${limiteMb} MB.`, "error");
-        return;
-      }
-
-      const titulo = textoSeguro(pdfTitulo.value).trim() || removerExtensaoPdf(arquivo.name);
-      const nomeArquivo = `${criarCarimboArquivo()}-${sanitizarNomeArquivo(arquivo.name)}`;
-      const pastaEvento = criarSlug(state.evento || "pronto-resultados");
-      const caminho = `resultados-pdf/${pastaEvento}/${nomeArquivo}`;
-      const arquivoRef = storageRef(storage, caminho);
-
-      definirUploadEmAndamento(true);
-      atualizarStatusUpload("Enviando PDF...", "");
+      definirPublicacaoEmAndamento(true);
+      atualizarStatusHistorico("Publicando link...", "");
 
       try {
-        await uploadBytes(arquivoRef, arquivo, {
-          contentType: "application/pdf",
-          customMetadata: {
-            evento: textoSeguro(state.evento),
-            titulo
-          }
-        });
-
-        const url = await getDownloadURL(arquivoRef);
-        await set(push(pdfsRef), {
+        await set(push(historicoRef), {
           titulo,
-          nome_original: arquivo.name,
-          caminho,
           url,
           evento: textoSeguro(state.evento),
-          tamanho_bytes: arquivo.size,
-          enviado_em: new Date().toISOString()
+          publicado_em: new Date().toISOString()
         });
 
-        pdfTitulo.value = "";
-        pdfArquivo.value = "";
-        atualizarStatusUpload("PDF enviado com sucesso.", "success");
+        historicoTitulo.value = "";
+        historicoUrl.value = "";
+        atualizarStatusHistorico("Link publicado com sucesso.", "success");
       } catch (error) {
-        atualizarStatusUpload(`Erro ao enviar PDF: ${error.message || "falha desconhecida"}`, "error");
+        atualizarStatusHistorico(`Erro ao publicar link: ${error.message || "falha desconhecida"}`, "error");
       } finally {
-        definirUploadEmAndamento(false);
+        definirPublicacaoEmAndamento(false);
       }
     }
 
-    function definirUploadEmAndamento(emAndamento) {
-      pdfUploadButton.disabled = emAndamento;
-      pdfUploadButton.textContent = emAndamento ? "Enviando..." : "Subir PDF";
+    function definirPublicacaoEmAndamento(emAndamento) {
+      historicoSaveButton.disabled = emAndamento;
+      historicoSaveButton.textContent = emAndamento ? "Publicando..." : "Publicar link";
     }
 
-    function atualizarStatusUpload(mensagem, tipo) {
-      pdfUploadStatus.textContent = mensagem;
-      pdfUploadStatus.classList.toggle("error", tipo === "error");
-      pdfUploadStatus.classList.toggle("success", tipo === "success");
+    function atualizarStatusHistorico(mensagem, tipo) {
+      historicoAdminStatus.textContent = mensagem;
+      historicoAdminStatus.classList.toggle("error", tipo === "error");
+      historicoAdminStatus.classList.toggle("success", tipo === "success");
     }
 
-    function normalizarPdfs(valor) {
+    function normalizarResultadosAnteriores(valor) {
       return Object.entries(valor || {})
-        .map(([id, pdf]) => ({ id, ...(pdf || {}) }))
-        .sort((a, b) => textoSeguro(b.enviado_em).localeCompare(textoSeguro(a.enviado_em)));
+        .map(([id, resultado]) => ({ id, ...(resultado || {}) }))
+        .filter((resultado) => textoSeguro(resultado.url).trim().length > 0)
+        .sort((a, b) => textoSeguro(b.publicado_em).localeCompare(textoSeguro(a.publicado_em)));
     }
 
-    function renderizarPdfs() {
-      if (!state.pdfs.length) {
-        listaPdfs.innerHTML = '<div class="empty-state">Nenhum PDF publicado.</div>';
+    function renderizarResultadosAnteriores() {
+      if (!state.resultadosAnteriores.length) {
+        listaHistorico.innerHTML = '<div class="empty-state">Nenhum resultado anterior publicado.</div>';
         return;
       }
 
-      listaPdfs.innerHTML = state.pdfs.map(renderizarPdfItem).join("");
+      listaHistorico.innerHTML = state.resultadosAnteriores.map(renderizarResultadoAnterior).join("");
     }
 
-    function renderizarPdfItem(pdf) {
-      const titulo = escapeHtml(textoSeguro(pdf.titulo || pdf.nome_original || "Resultado em PDF"));
-      const url = textoSeguro(pdf.url).trim();
+    function renderizarResultadoAnterior(resultado) {
+      const titulo = escapeHtml(textoSeguro(resultado.titulo || "Resultado anterior"));
+      const url = textoSeguro(resultado.url).trim();
       const href = /^https?:\/\//i.test(url) ? escapeHtml(url) : "#";
-      const nomeOriginal = textoSeguro(pdf.nome_original);
-      const tamanho = formatarBytes(pdf.tamanho_bytes);
-      const data = formatarDataHora(pdf.enviado_em);
-      const metadados = [nomeOriginal, tamanho, data].filter(Boolean).join(" - ");
-      const rotuloLink = href === "#" ? "Indisponivel" : "Abrir PDF";
+      const data = formatarDataHora(resultado.publicado_em);
+      const evento = textoSeguro(resultado.evento).trim();
+      const metadados = [evento, data].filter(Boolean).join(" - ");
+      const rotuloLink = href === "#" ? "Indisponivel" : "Abrir resultado";
 
       return `
-        <article class="pdf-item">
+        <article class="historico-item">
           <div>
-            <strong class="pdf-title">${titulo}</strong>
-            <span class="pdf-meta">${escapeHtml(metadados)}</span>
+            <strong class="historico-title">${titulo}</strong>
+            <span class="historico-meta">${escapeHtml(metadados)}</span>
           </div>
-          <a class="pdf-link" href="${href}" target="_blank" rel="noopener">${rotuloLink}</a>
+          <a class="historico-link" href="${href}" target="_blank" rel="noopener">${rotuloLink}</a>
         </article>
       `;
     }
@@ -1336,49 +1315,6 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
-    }
-
-    function removerExtensaoPdf(nome) {
-      return textoSeguro(nome).replace(/\.pdf$/i, "").trim();
-    }
-
-    function criarCarimboArquivo() {
-      const agora = new Date();
-      const partes = [
-        agora.getFullYear(),
-        String(agora.getMonth() + 1).padStart(2, "0"),
-        String(agora.getDate()).padStart(2, "0"),
-        String(agora.getHours()).padStart(2, "0"),
-        String(agora.getMinutes()).padStart(2, "0"),
-        String(agora.getSeconds()).padStart(2, "0")
-      ];
-
-      return `${partes[0]}${partes[1]}${partes[2]}-${partes[3]}${partes[4]}${partes[5]}`;
-    }
-
-    function criarSlug(valor) {
-      const slug = normalizar(valor)
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-
-      return slug || "pronto-resultados";
-    }
-
-    function sanitizarNomeArquivo(nome) {
-      const nomeSeguro = normalizar(removerExtensaoPdf(nome))
-        .replace(/[^a-z0-9._-]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 80);
-
-      return `${nomeSeguro || "resultado"}.pdf`;
-    }
-
-    function formatarBytes(bytes) {
-      const valor = Number(bytes);
-      if (!Number.isFinite(valor) || valor <= 0) return "";
-      if (valor < 1024) return `${valor} B`;
-      if (valor < 1024 * 1024) return `${(valor / 1024).toFixed(1)} KB`;
-      return `${(valor / (1024 * 1024)).toFixed(1)} MB`;
     }
 
     function formatarDataHora(valor) {
