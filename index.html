@@ -826,7 +826,7 @@
     <main id="lista-resultados" class="results-grid"></main>
   </div>
 
-  <footer class="institutional-footer">Pronto Cronometragem - Contato Nerval (38) 98847-2336</footer>
+  <footer class="institutional-footer">Pronto Sistemas de Cronometragem - Contato Nerval (38) 98847-2336</footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -839,6 +839,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const resultadosRef = databaseRef(db, "prova/atual");
+    const resultadosBlocosRef = databaseRef(db, "prova/atual_blocos");
     const historicoRef = databaseRef(db, "prova/resultados_anteriores");
 
     const state = {
@@ -849,6 +850,13 @@
       mensagemOperacional: "",
       busca: "",
       resultadosAnteriores: []
+    };
+
+    const fontesResultado = {
+      legado: null,
+      blocos: null,
+      legadoCarregado: false,
+      blocosCarregado: false
     };
 
     const listaResultados = document.getElementById("lista-resultados");
@@ -902,8 +910,43 @@
     });
 
     onValue(resultadosRef, (snapshot) => {
-      const data = snapshot.val();
+      fontesResultado.legado = snapshot.val();
+      fontesResultado.legadoCarregado = true;
+      atualizarResultadoAtivo();
+    }, (error) => {
+      listaResultados.innerHTML =
+        `<div class="empty-state">Erro ao ler Firebase: ${escapeHtml(error.message || "Falha desconhecida")}</div>`;
+      contadorResultados.textContent = "";
+    });
 
+    onValue(resultadosBlocosRef, (snapshot) => {
+      fontesResultado.blocos = snapshot.val();
+      fontesResultado.blocosCarregado = true;
+      atualizarResultadoAtivo();
+    }, (error) => {
+      fontesResultado.blocosCarregado = true;
+      console.warn("Erro ao ler Firebase por blocos:", error);
+      atualizarResultadoAtivo();
+    });
+
+    function atualizarResultadoAtivo() {
+      const legado = fontesResultado.legado;
+      const blocos = montarPayloadBlocos(fontesResultado.blocos);
+
+      if (deveUsarPayloadBlocos(blocos, legado)) {
+        aplicarPayloadResultado(blocos);
+        return;
+      }
+
+      if (!fontesResultado.blocosCarregado) {
+        aplicarPayloadResultado(null);
+        return;
+      }
+
+      aplicarPayloadResultado(legado);
+    }
+
+    function aplicarPayloadResultado(data) {
       if (!data) {
         state.evento = "";
         state.atualizacao = "--:--:--";
@@ -923,12 +966,62 @@
 
       atualizarCabecalho();
       render();
-    }, (error) => {
-      listaResultados.innerHTML =
-        `<div class="empty-state">Erro ao ler Firebase: ${escapeHtml(error.message || "Falha desconhecida")}</div>`;
-      contadorResultados.textContent = "";
-    });
+    }
 
+    function montarPayloadBlocos(data) {
+      if (!data || normalizar(data.modo) !== "BLOCOS" || !data.meta || typeof data.meta !== "object") {
+        return null;
+      }
+
+      const meta = data.meta;
+      const blocos = data.blocos && typeof data.blocos === "object" ? data.blocos : {};
+      const ordem = Array.isArray(meta.ordem_blocos) ? meta.ordem_blocos : [];
+      const resultados = [];
+      const usados = new Set();
+
+      for (const id of ordem) {
+        const chave = textoSeguro(id).trim();
+        if (!chave || usados.has(chave) || !blocos[chave]) continue;
+        resultados.push(blocos[chave]);
+        usados.add(chave);
+      }
+
+      for (const chave of Object.keys(blocos).sort((a, b) => a.localeCompare(b))) {
+        if (usados.has(chave) || !blocos[chave]) continue;
+        resultados.push(blocos[chave]);
+      }
+
+      return {
+        evento: meta.evento,
+        status_painel: meta.status_painel,
+        mensagem_operacional: meta.mensagem_operacional,
+        ultima_atualizacao: meta.ultima_atualizacao,
+        ultima_atualizacao_iso: meta.ultima_atualizacao_iso,
+        ultima_atualizacao_valida: meta.ultima_atualizacao_valida,
+        ultima_atualizacao_valida_iso: meta.ultima_atualizacao_valida_iso,
+        contato: meta.contato,
+        resultados
+      };
+    }
+
+    function deveUsarPayloadBlocos(blocos, legado) {
+      if (!blocos) return false;
+      if (!legado) return true;
+
+      const tempoBlocos = obterTimestampPayload(blocos);
+      const tempoLegado = obterTimestampPayload(legado);
+      if (Number.isFinite(tempoBlocos) && Number.isFinite(tempoLegado)) {
+        return tempoBlocos >= tempoLegado;
+      }
+
+      return Number.isFinite(tempoBlocos) && !Number.isFinite(tempoLegado);
+    }
+
+    function obterTimestampPayload(payload) {
+      const iso = textoSeguro(payload?.ultima_atualizacao_iso).trim();
+      const timestamp = Date.parse(iso);
+      return Number.isFinite(timestamp) ? timestamp : Number.NaN;
+    }
     function abrirHistorico() {
       historicoSection.hidden = false;
       document.body.classList.add("modal-open");
