@@ -839,6 +839,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const resultadosRef = databaseRef(db, "prova/atual");
+    const resultadosMetaRef = databaseRef(db, "prova/atual/meta");
+    const resultadosBlocosRef = databaseRef(db, "prova/atual/blocos");
     const historicoRef = databaseRef(db, "prova/resultados_anteriores");
 
     const state = {
@@ -854,6 +856,8 @@
     const fontesResultado = {
       legado: null,
       blocos: null,
+      metaSeparado: null,
+      blocosSeparados: null,
       legadoCarregado: false,
       blocosCarregado: false
     };
@@ -921,10 +925,29 @@
       contadorResultados.textContent = "";
     });
 
+    onValue(resultadosMetaRef, (snapshot) => {
+      fontesResultado.metaSeparado = snapshot.val();
+      atualizarResultadoAtivo();
+    }, (error) => {
+      console.warn("Erro ao ler meta dos resultados:", error);
+    });
+
+    onValue(resultadosBlocosRef, (snapshot) => {
+      fontesResultado.blocosSeparados = snapshot.val();
+      fontesResultado.blocosCarregado = true;
+      atualizarResultadoAtivo();
+    }, (error) => {
+      fontesResultado.blocosCarregado = true;
+      console.warn("Erro ao ler blocos dos resultados:", error);
+      atualizarResultadoAtivo();
+    });
+
 
     function atualizarResultadoAtivo() {
       const legado = fontesResultado.legado;
-      const blocos = montarPayloadBlocos(fontesResultado.blocos) || montarPayloadBlocos(legado);
+      const blocosSeparados = montarPayloadBlocosComPartes(fontesResultado.metaSeparado, fontesResultado.blocosSeparados);
+      const blocosRaiz = montarPayloadBlocos(fontesResultado.blocos) || montarPayloadBlocos(legado);
+      const blocos = escolherPayloadBlocos(blocosSeparados, blocosRaiz, legado);
 
       if (deveUsarPayloadBlocos(blocos, legado)) {
         aplicarPayloadResultado(blocos);
@@ -966,8 +989,15 @@
         return null;
       }
 
-      const meta = data.meta;
-      const blocos = data.blocos && typeof data.blocos === "object" ? data.blocos : {};
+      return montarPayloadBlocosComPartes(data.meta, data.blocos);
+    }
+
+    function montarPayloadBlocosComPartes(meta, blocosOrigem) {
+      if (!meta || typeof meta !== "object") {
+        return null;
+      }
+
+      const blocos = blocosOrigem && typeof blocosOrigem === "object" ? blocosOrigem : {};
       const ordem = Array.isArray(meta.ordem_blocos) ? meta.ordem_blocos : [];
       const resultados = [];
       const usados = new Set();
@@ -995,6 +1025,17 @@
         contato: meta.contato,
         resultados
       };
+    }
+
+    function escolherPayloadBlocos(blocosSeparados, blocosRaiz, legado) {
+      if (temResultadosPayload(blocosSeparados)) return blocosSeparados;
+      if (temResultadosPayload(blocosRaiz)) return blocosRaiz;
+      return blocosSeparados || blocosRaiz || null;
+    }
+
+    function temResultadosPayload(payload) {
+      return Array.isArray(payload?.resultados) &&
+        payload.resultados.some((categoria) => Array.isArray(categoria?.atletas) && categoria.atletas.length > 0);
     }
 
     function deveUsarPayloadBlocos(blocos, legado) {
