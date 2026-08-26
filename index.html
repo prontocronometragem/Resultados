@@ -839,7 +839,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const resultadosRef = databaseRef(db, "prova/atual");
-    const resultadosBlocosRef = databaseRef(db, "prova/atual_blocos");
     const historicoRef = databaseRef(db, "prova/resultados_anteriores");
 
     const state = {
@@ -910,8 +909,11 @@
     });
 
     onValue(resultadosRef, (snapshot) => {
-      fontesResultado.legado = snapshot.val();
+      const data = snapshot.val();
+      fontesResultado.legado = data;
+      fontesResultado.blocos = data;
       fontesResultado.legadoCarregado = true;
+      fontesResultado.blocosCarregado = true;
       atualizarResultadoAtivo();
     }, (error) => {
       listaResultados.innerHTML =
@@ -919,19 +921,10 @@
       contadorResultados.textContent = "";
     });
 
-    onValue(resultadosBlocosRef, (snapshot) => {
-      fontesResultado.blocos = snapshot.val();
-      fontesResultado.blocosCarregado = true;
-      atualizarResultadoAtivo();
-    }, (error) => {
-      fontesResultado.blocosCarregado = true;
-      console.warn("Erro ao ler Firebase por blocos:", error);
-      atualizarResultadoAtivo();
-    });
 
     function atualizarResultadoAtivo() {
       const legado = fontesResultado.legado;
-      const blocos = montarPayloadBlocos(fontesResultado.blocos);
+      const blocos = montarPayloadBlocos(fontesResultado.blocos) || montarPayloadBlocos(legado);
 
       if (deveUsarPayloadBlocos(blocos, legado)) {
         aplicarPayloadResultado(blocos);
@@ -1170,7 +1163,11 @@
        atualizarStatusBanner();
 
       if (!state.categorias.length) {
-        listaResultados.innerHTML = "";
+        const status = normalizar(state.painelStatus);
+        const mensagem = status === "OFFLINE"
+          ? "Sistema fechado. Aguardando abertura do ProntoResultados."
+          : "Aguardando dados do cronometro...";
+        listaResultados.innerHTML = `<div class="empty-state">${mensagem}</div>`;
         return;
       }
 
