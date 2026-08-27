@@ -1230,7 +1230,9 @@
 
     function mensagemDadosVazios(mensagem) {
       const texto = normalizar(mensagem);
-      return texto.includes("arquivo json vazio") || texto.includes("sem atletas");
+      return texto.includes("arquivo json vazio") ||
+        texto.includes("sem atletas") ||
+        texto.includes("aguardando dados do cronometro");
     }
 
     function filtrarCategorias(categorias, busca) {
