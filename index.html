@@ -38,7 +38,7 @@
         linear-gradient(180deg, #f7fafc 0%, var(--bg) 100%);
       color: var(--ink);
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      padding-bottom: 56px;
+      padding-bottom: max(56px, calc(var(--footer-height, 40px) + 16px));
     }
 
     .page-shell {
@@ -180,6 +180,55 @@
       opacity: 0.92;
       transform: translateY(-1px);
       outline: none;
+    }
+
+    .top-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scroll-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--brand-strong);
+      cursor: pointer;
+    }
+
+    .scroll-button:hover {
+      background: var(--panel-muted);
+    }
+
+    .scroll-button:focus-visible {
+      outline: 3px solid #7ba3cc;
+      outline-offset: 3px;
+    }
+
+    .scroll-button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .scroll-button[aria-pressed="true"] {
+      background: var(--brand-strong);
+      color: #fff;
+    }
+
+    .scroll-button .scroll-pause-icon,
+    .scroll-button[aria-pressed="true"] .scroll-play-icon {
+      display: none;
+    }
+
+    .scroll-button[aria-pressed="true"] .scroll-pause-icon {
+      display: block;
     }
 
     body.modal-open {
@@ -634,6 +683,18 @@
       color: var(--ink-soft);
     }
     .institutional-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .institutional-footer > span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .institutional-footer {
       position: fixed;
       left: 0;
       right: 0;
@@ -759,7 +820,34 @@
   <div class="page-shell">
     <div class="top-actions">
       <img src="./logo.png" alt="Logo do evento" class="top-logo">
-      <button id="historico-toggle" class="resultados-button" type="button">Resultados</button>
+      <div class="top-buttons">
+        <button id="rolagem-toggle" class="scroll-button" type="button" aria-label="Ativar rolagem automatica" title="Ativar rolagem automatica" aria-pressed="false" aria-controls="lista-resultados" disabled>
+          <!--
+            Lucide icons, ISC License.
+            Copyright (c) 2026 Lucide Icons and Contributors
+
+            Permission to use, copy, modify, and/or distribute this software for any
+            purpose with or without fee is hereby granted, provided that the above
+            copyright notice and this permission notice appear in all copies.
+
+            THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+            WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+            MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+            ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+            WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+            ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+            OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+          -->
+          <svg class="scroll-play-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+          </svg>
+          <svg class="scroll-pause-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="14" y="3" width="5" height="18" rx="1" />
+            <rect x="5" y="3" width="5" height="18" rx="1" />
+          </svg>
+        </button>
+        <button id="historico-toggle" class="resultados-button" type="button">Resultados</button>
+      </div>
     </div>
 
     <header class="hero">
@@ -826,7 +914,138 @@
     <main id="lista-resultados" class="results-grid"></main>
   </div>
 
-  <footer class="institutional-footer">Pronto Sistemas de Cronometragem - Contato Nerval (38) 98847-2336</footer>
+  <footer class="institutional-footer">
+    <span>Pronto Sistemas de Cronometragem - Contato Nerval (38) 98847-2336</span>
+    <button id="rolagem-pausar" class="scroll-button" type="button" aria-label="Pausar rolagem automatica" title="Pausar rolagem automatica" aria-controls="lista-resultados" hidden>
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="14" y="3" width="5" height="18" rx="1" />
+        <rect x="5" y="3" width="5" height="18" rx="1" />
+      </svg>
+    </button>
+  </footer>
+
+  <script>
+    (() => {
+      const botao = document.getElementById("rolagem-toggle");
+      const pausar = document.getElementById("rolagem-pausar");
+      const resultados = document.getElementById("lista-resultados");
+      const historico = document.getElementById("historico-resultados");
+      const busca = document.getElementById("busca-atleta");
+      const rodape = document.querySelector(".institutional-footer");
+      const velocidade = 35; // Pixels por segundo.
+      const intervalo = 3000;
+      let ativa = false;
+      let quadro = 0;
+      let ultimoTempo = 0;
+      let aguardarAte = 0;
+      let posicao = 0;
+      let fase = "inicio";
+
+      function limiteRolagem() {
+        return Math.max(0, document.scrollingElement.scrollHeight - window.innerHeight);
+      }
+
+      function podeRolar() {
+        return resultados.querySelector(".percurso-section") !== null && limiteRolagem() > 1;
+      }
+
+      function suspensa() {
+        return document.hidden || !historico.hidden || document.activeElement === busca;
+      }
+
+      function atualizarControles() {
+        botao.disabled = !podeRolar();
+        botao.setAttribute("aria-pressed", String(ativa));
+        const titulo = ativa ? "Pausar rolagem automatica" : "Ativar rolagem automatica";
+        botao.setAttribute("aria-label", titulo);
+        botao.title = titulo;
+        pausar.hidden = !ativa;
+      }
+
+      function definirAtiva(valor) {
+        ativa = valor && podeRolar();
+        atualizarControles();
+        sincronizarAnimacao();
+      }
+
+      function sincronizarAnimacao() {
+        if (!ativa || suspensa()) {
+          cancelAnimationFrame(quadro);
+          quadro = 0;
+          return;
+        }
+        if (quadro) return;
+        ultimoTempo = 0;
+        posicao = window.scrollY;
+        fase = "inicio";
+        aguardarAte = performance.now() + intervalo;
+        quadro = requestAnimationFrame(avancar);
+      }
+
+      function avancar(agora) {
+        quadro = 0;
+        if (!ativa || suspensa()) return;
+        if (!podeRolar()) {
+          definirAtiva(false);
+          return;
+        }
+
+        const limite = limiteRolagem();
+        const decorrido = ultimoTempo ? Math.min(agora - ultimoTempo, 64) : 0;
+        ultimoTempo = agora;
+        // A lista pode crescer ou mudar de altura durante uma atualizacao ao vivo.
+        if (Math.abs(window.scrollY - posicao) > 2) posicao = window.scrollY;
+        if (fase === "final" && window.scrollY < limite - 2) {
+          fase = "descendo";
+          aguardarAte = 0;
+        }
+
+        if (agora >= aguardarAte) {
+          if (fase === "final") {
+            window.scrollTo({ top: 0, behavior: "instant" });
+            posicao = 0;
+            fase = "inicio";
+            aguardarAte = agora + intervalo;
+          } else {
+            fase = "descendo";
+            posicao = Math.min(limite, posicao + velocidade * decorrido / 1000);
+            window.scrollTo({ top: posicao, behavior: "instant" });
+            if (posicao >= limite - 1) {
+              window.scrollTo({ top: limite, behavior: "instant" });
+              posicao = limite;
+              fase = "final";
+              aguardarAte = agora + intervalo;
+            }
+          }
+        }
+        quadro = requestAnimationFrame(avancar);
+      }
+
+      function atualizarDimensoes() {
+        document.documentElement.style.setProperty("--footer-height", rodape.offsetHeight + "px");
+        if (ativa && !podeRolar()) definirAtiva(false);
+        else atualizarControles();
+      }
+
+      botao.addEventListener("click", () => definirAtiva(!ativa));
+      pausar.addEventListener("click", () => {
+        definirAtiva(false);
+        botao.focus({ preventScroll: true });
+      });
+      document.addEventListener("visibilitychange", sincronizarAnimacao);
+      busca.addEventListener("focus", sincronizarAnimacao);
+      busca.addEventListener("blur", sincronizarAnimacao);
+      window.addEventListener("resize", atualizarDimensoes);
+      new MutationObserver(sincronizarAnimacao).observe(historico, {
+        attributes: true,
+        attributeFilter: ["hidden"]
+      });
+      const observador = new ResizeObserver(atualizarDimensoes);
+      observador.observe(resultados);
+      observador.observe(rodape);
+      atualizarDimensoes();
+    })();
+  </script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
